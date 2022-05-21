@@ -1,0 +1,9 @@
+external_storage:
+  - postgres:
+      docker_run: docker run --name postgres-0 -e POSTGRES_PASSWORD=123456qwerty -p 5432:5432  -d postgres
+  - neo4j:
+      docker_run: docker run -p7474:7474 -p7687:7687 -e NEO4J_AUTH=neo4j/s3cr3t neo4j
+      user_name: neo4j
+      password: s3cr3t
+      uri: neo4j://localhost:7687
+other:
