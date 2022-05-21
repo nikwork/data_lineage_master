@@ -16,7 +16,7 @@ class DataLinageObjectType(IntEnum):
     DATA_ELEMENT = 1
 
     # Business process
-    BUSINESS_PROCESS = 2cleR
+    BUSINESS_PROCESS = None
 
 
 @dataclass
