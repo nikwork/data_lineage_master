@@ -1,10 +1,10 @@
 import unittest
 from neo4j import GraphDatabase, unit_of_work
-from DataLinageObjectFactory import DataLinageObjectFactory
+from data_linage_object_factory import DataLinageObjectFactory
 from BusinessProcess import BisnessProcess
-from DataEelement import ElementAbstractionLevel as AbstractionLevel
+from data_element import ElementAbstractionLevel as AbstractionLevel
 import yaml
-import pandas as pd
+# import pandas as pd
 import dataclasses
 
 # Note compare test methods name
@@ -14,7 +14,11 @@ unittest.TestLoader.sortTestMethodsUsing = None
 _TST_DATA_PATH = "./Data/tst_proc_desc.xlsx"
 
 # Create Neo4j driver
-_DRIVER = GraphDatabase.driver("neo4j://localhost:7687", auth=("neo4j", "s3cr3t"), max_connection_lifetime=1000)
+_DRIVER = GraphDatabase.driver(
+    "neo4j://localhost:7687",
+    auth=("neo4j", "s3cr3t"),
+    max_connection_lifetime=1000
+    )
 
 
 class TestObjects(unittest.TestCase):
@@ -24,14 +28,17 @@ class TestObjects(unittest.TestCase):
     def setUpModule():
         print('setUpModule')
 
-    ####################################################################################################################
+    ################################################################################################################
     # Help methods
-    ####################################################################################################################
+    ################################################################################################################
 
     @staticmethod
     @unit_of_work(timeout=5)
     def create_person(tx, name):
-        return tx.run("CREATE (a:Test {name: $name}) RETURN id(a)", name=name).single().value()
+        return tx.run(
+                        "CREATE (a:Test {name: $name}) RETURN id(a)",
+                        name=name
+                    ).single().value()
 
     @staticmethod
     @unit_of_work(timeout=5)
@@ -40,7 +47,8 @@ class TestObjects(unittest.TestCase):
         # Convert data types
 
         if properties.get("data_linage_object_type") is not None:
-            properties["data_linage_object_type"] = int(properties["data_linage_object_type"])
+            properties["data_linage_object_type"] = \
+                int(properties["data_linage_object_type"])
 
         if properties.get("tags") is not None:
             properties["tags"] = list(properties["tags"])
@@ -55,19 +63,25 @@ class TestObjects(unittest.TestCase):
         return tx.run(query="CREATE (a:Process) SET a = $dict_param  RETURN id(a)", dict_param=properties) \
             .single().value()
 
-    ####################################################################################################################
+    ################################################################################################################
     # Tests
-    ####################################################################################################################
+    ################################################################################################################
 
     def test_data_linage_object(self):
         """
         Test simple data linage object factory
         """
 
-        test_data_linage_object = DataLinageObjectFactory.data_linage_object_factory(name='test_object',
-                                                                                     description='test object')
+        test_data_linage_object = \
+            DataLinageObjectFactory.data_linage_object_factory(
+                                                    name='test_object',
+                                                    description='test object'
+                                                    )
         id_len = len(str(test_data_linage_object.id))
-        self.assertTrue(id_len == 36, f"data_linage_object_factory: object id len is not 36 ({id_len})")
+        self.assertTrue(
+            id_len == 36,
+            f"data_linage_object_factory: object id len is not 36 ({id_len})"
+        )
 
     def test_data_element_object(self):
         """
@@ -75,15 +89,16 @@ class TestObjects(unittest.TestCase):
         """
 
         # DataLinageObjectFactory.data_element_factory()
-        data_element = DataLinageObjectFactory.data_element_factory(name="test_object",
-                                                                    system_name="test_system",
-                                                                    storage_name="test_storage",
-                                                                    description=None,
-                                                                    ext_storage_sync=False,
-                                                                    tags=set,
-                                                                    relations=set,
-                                                                    abstraction_level=int(AbstractionLevel.NOT_DEFINED)
-                                                                    )
+        data_element = DataLinageObjectFactory.data_element_factory(
+                            name="test_object",
+                            system_name="test_system",
+                            storage_name="test_storage",
+                            description=None,
+                            ext_storage_sync=False,
+                            tags=set,
+                            relations=set,
+                            abstraction_level=int(AbstractionLevel.NOT_DEFINED)
+                        )
 
         self.assertTrue(data_element.full_name == "test_system.test_storage.test_object",
                         "Error in full name calculation")
@@ -150,7 +165,12 @@ class TestObjects(unittest.TestCase):
             session.run("MATCH (a:Process) WHERE a.is_test_object=True DELETE a")
 
         # Check
-        self.assertEqual(self, len(dict_proc), len(node_id_list), "Not all processes in file moved in Neo4j")
+        self.assertEqual(
+                        self,
+                        len(dict_proc),
+                        len(node_id_list),
+                        "Not all processes in file moved in Neo4j"
+                        )
 
     def test_create_business_processes_from_file(self):
         """
@@ -176,27 +196,42 @@ class TestObjects(unittest.TestCase):
 
         #
         for row in dict_proc:
+
+            # Create DusinessProcess object(Unpack process properties from dict
             business_process = BisnessProcess(
-                **row)  # Create DusinessProcess object(Unpack process properties from dict
+                **row
+                )
             print(business_process)
             business_processes.append(dataclasses.asdict(business_process))
         print(business_processes)
         # Create session
         with _DRIVER.session() as session:
             # Delete test processes before test ()
-            session.run("MATCH (a:Process) WHERE a.is_test_object=True DELETE a")
+            session.run(
+                "MATCH (a:Process) \
+                WHERE a.is_test_object=True DELETE a"
+                )
 
             # Load each row
             for row in business_processes:
                 row["is_test_object"] = True
-                node_id = session.write_transaction(TestObjects.create_process, row)
+                node_id = session.write_transaction(
+                    TestObjects.create_process,
+                    row
+                    )
                 node_id_list.append(node_id)
 
             # Delete test processes after test
-            # session.run("MATCH (a:Process) WHERE a.is_test_object=True DELETE a")
+            # session.run("MATCH (a:Process)
+            # WHERE a.is_test_object=True DELETE a")
 
         # Check
-        self.assertEqual(self, len(dict_proc), len(node_id_list), "Not all processes in file moved in Neo4j")
+        self.assertEqual(
+                            self,
+                            len(dict_proc),
+                            len(node_id_list),
+                            "Not all processes in file moved in Neo4j"
+                        )
 
 
 if __name__ == "Tests":
