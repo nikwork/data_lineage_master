@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from enum import IntEnum
-from datetime import datetime, date
+from datetime import datetime
 import uuid
 
 
@@ -29,7 +29,9 @@ class DataLinageObject:
     name: str
 
     # Data linage object type
-    data_linage_object_type: int = field(default=DataLinageObjectType.DATA_LINAGE_OBJECT)
+    data_linage_object_type: int = field(
+        default=DataLinageObjectType.DATA_LINAGE_OBJECT
+        )
 
     # All key text tags for object
     tags: set = field(default_factory=set)
@@ -52,7 +54,8 @@ class DataLinageObject:
     # True - object version is actual
     actual_flg: bool = field(default=False)
 
-    # True - post init load actual state from data base and save changes to external storage
+    # True - post init load actual state from data base
+    # and save changes to external storage
     ext_storage_sync: bool = field(default=False)
 
     id: str = (field(default_factory=uuid.uuid4))
@@ -60,6 +63,5 @@ class DataLinageObject:
     version: int = field(default=0)
 
     def __post_init__(self):
-        #self.id = str(uuid.uuid4())
+        # self.id = str(uuid.uuid4())
         pass
-
