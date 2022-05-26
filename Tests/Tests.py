@@ -1,23 +1,42 @@
+import os
 import unittest
 from neo4j import GraphDatabase, unit_of_work
 from data_linage_object_factory import DataLinageObjectFactory
 from BusinessProcess import BisnessProcess
 from data_element import ElementAbstractionLevel as AbstractionLevel
 import yaml
-# import pandas as pd
+from dotenv import load_dotenv
 import dataclasses
 
-# Note compare test methods name
-unittest.TestLoader.sortTestMethodsUsing = None
 
+# Load .env
+BASEDIR = os.path.abspath(os.path.dirname(__file__))
+load_dotenv(os.path.join(BASEDIR, 'test_env.env'))
+
+print(f"BASEDIR:\n{BASEDIR}")
+
+# STR postfix shows that variable is instance of sring
+# INT postfix shows that variable is instance of integer
+NEO4J_HOST_STR = os.getenv('NEO4J_HOST')
+NEO4J_PORT_STR = os.getenv('NEO4J_PORT', '7687')
+NEO4J_USER_STR = os.getenv('NEO4J_USER')
+NEO4J_PWD_STR = os.getenv('NEO4J_PWD')
+NEO4J_MAX_CONNECTION_LIFETIME_INT = int(os.getenv(
+                                            'NEO4J_MAX_CONNECTION_LIFETIME',
+                                            '1000'
+                                            )
+                                        )
 # Path to excel file with test data (processes, sources, destination objects)
-_TST_DATA_PATH = "./Data/tst_proc_desc.xlsx"
+TEST_DATA_PATH = os.getenv('TEST_DATA_PATH')
+
+# Not compare test methods name
+unittest.TestLoader.sortTestMethodsUsing = None
 
 # Create Neo4j driver
 _DRIVER = GraphDatabase.driver(
-    "neo4j://localhost:7687",
-    auth=("neo4j", "s3cr3t"),
-    max_connection_lifetime=1000
+    f"neo4j://{NEO4J_HOST_STR}:{NEO4J_PORT_STR}",
+    auth=(NEO4J_USER_STR, NEO4J_PWD_STR),
+    max_connection_lifetime=NEO4J_MAX_CONNECTION_LIFETIME_INT
     )
 
 
@@ -136,7 +155,7 @@ class TestObjects(unittest.TestCase):
         """
 
         # Test data location
-        tst_data_path = _TST_DATA_PATH
+        tst_data_path = TEST_DATA_PATH
 
         # Dict with process properties
         dict_proc = {}
@@ -178,7 +197,7 @@ class TestObjects(unittest.TestCase):
         """
 
         # Test data location
-        tst_data_path = _TST_DATA_PATH
+        tst_data_path = TEST_DATA_PATH
 
         # Dict with process properties
         dict_proc = {}
