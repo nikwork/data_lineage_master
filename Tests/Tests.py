@@ -2,11 +2,11 @@ import os
 import unittest
 from neo4j import GraphDatabase, unit_of_work
 from data_linage_object_factory import DataLinageObjectFactory
-from BusinessProcess import BisnessProcess
+from business_process import BisnessProcess
 from data_element import ElementAbstractionLevel as AbstractionLevel
-import yaml
 from dotenv import load_dotenv
 import dataclasses
+import pandas as pd
 
 
 # Load .env
@@ -47,10 +47,7 @@ class TestObjects(unittest.TestCase):
     def setUpModule():
         print('setUpModule')
 
-    ################################################################################################################
     # Help methods
-    ################################################################################################################
-
     @staticmethod
     @unit_of_work(timeout=5)
     def create_person(tx, name):
@@ -79,12 +76,13 @@ class TestObjects(unittest.TestCase):
             properties["id"] = str(properties["id"])
 
         # Insert row
-        return tx.run(query="CREATE (a:Process) SET a = $dict_param  RETURN id(a)", dict_param=properties) \
+        return tx.run(
+                query="CREATE (a:Process) SET a = $dict_param  RETURN id(a)",
+                dict_param=properties
+            ) \
             .single().value()
 
-    ################################################################################################################
-    # Tests
-    ################################################################################################################
+    # Start tests
 
     def test_data_linage_object(self):
         """
@@ -119,9 +117,15 @@ class TestObjects(unittest.TestCase):
                             abstraction_level=int(AbstractionLevel.NOT_DEFINED)
                         )
 
-        self.assertTrue(data_element.full_name == "test_system.test_storage.test_object",
-                        "Error in full name calculation")
-        self.assertTrue(data_element.abstraction_level == 0, "Not correct abstraction level")
+        self.assertTrue(
+            data_element.full_name == "test_system.test_storage.test_object",
+            "Error in full name calculation"
+            )
+
+        self.assertTrue(
+            data_element.abstraction_level == 0,
+            "Not correct abstraction level"
+            )
 
     def test_neo4j_connection(self):
         """
@@ -130,27 +134,25 @@ class TestObjects(unittest.TestCase):
 
         neo4j_config: dict
 
-        with open("../config.yml", 'r') as yamlfile:
-            data = yaml.load(yamlfile, Loader=yaml.FullLoader)
-            neo4j_config = list(
-                filter(lambda storage: "neo4j" in storage, data["external_storage"])
-            )[0]["neo4j"]
-
         # Create session
         with _DRIVER.session() as session:
             # create test node
             node_id = -1
-            node_id = session.write_transaction(TestObjects.create_person, "Test")
+            node_id = session.write_transaction(
+                    TestObjects.create_person,
+                    "Test"
+                )
 
             # check node id
             self.assertTrue(node_id > -1, "Create test node error")
 
             # remove test node
-            res = session.run("MATCH (n {name:\"Test\"}) DELETE n")
+            session.run("MATCH (n {name:\"Test\"}) DELETE n")
 
     def test_create_process_from_file(self):
         """
-        TODO: this test starts after test_create_business_processes_from_file. Have to find why and create correct test loge
+        TODO: this test starts after test_create_business_processes_from_file.
+        Have to find why and create correct test loge
         Create processes in neo4f directly (without BusinessProject data class)
         """
 
@@ -171,17 +173,32 @@ class TestObjects(unittest.TestCase):
         # Create session
         with _DRIVER.session() as session:
             # Delete test processes before test
-            session.run("MATCH (a:Process) WHERE a.is_test_object=True DELETE a")
+            session.run(
+                    "MATCH (a:Process) WHERE a.is_test_object=True DELETE a"
+                )
 
             # Load each row
             for row in dict_proc:
-                row["process_natural_key"] = "_".join([str(row["process_group_id"]), str(row["process_group_id"])])
+
+                row["process_natural_key"] = \
+                    "_".join([
+                            str(row["process_group_id"]),
+                            str(row["process_group_id"])
+                        ])
+
                 row["is_test_object"] = True
-                node_id = session.write_transaction(TestObjects.create_process, row)
+
+                node_id = session.write_transaction(
+                        TestObjects.create_process,
+                        row
+                    )
+
                 node_id_list.append(node_id)
 
             # Delete test processes after test
-            session.run("MATCH (a:Process) WHERE a.is_test_object=True DELETE a")
+            session.run(
+                "MATCH (a:Process) WHERE a.is_test_object=True DELETE a"
+                )
 
         # Check
         self.assertEqual(
