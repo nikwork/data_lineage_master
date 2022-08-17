@@ -1,3 +1,6 @@
+import sys
+# TODO: Fix fileflake8(E402).
+sys.path.append("/Users/nikolayvlasov/PythonProjects/data_lineage_master")
 import os
 import unittest
 from neo4j import GraphDatabase, unit_of_work
@@ -8,10 +11,11 @@ from dotenv import load_dotenv
 import dataclasses
 import pandas as pd
 
+print(__name__)
 
 # Load .env
 BASEDIR = os.path.abspath(os.path.dirname(__file__))
-load_dotenv(os.path.join(BASEDIR, 'test_env.env'))
+load_dotenv(os.path.join(BASEDIR, '../config/.env.dev'))
 
 print(f"BASEDIR:\n{BASEDIR}")
 
@@ -26,6 +30,8 @@ NEO4J_MAX_CONNECTION_LIFETIME_INT = int(os.getenv(
                                             '1000'
                                             )
                                         )
+NEO4J_URI = f"neo4j://{NEO4J_HOST_STR}:{NEO4J_PORT_STR}"
+
 # Path to excel file with test data (processes, sources, destination objects)
 TEST_DATA_PATH = os.getenv('TEST_DATA_PATH')
 
@@ -33,10 +39,11 @@ TEST_DATA_PATH = os.getenv('TEST_DATA_PATH')
 unittest.TestLoader.sortTestMethodsUsing = None
 
 # Create Neo4j driver
+
 _DRIVER = GraphDatabase.driver(
-    f"neo4j://{NEO4J_HOST_STR}:{NEO4J_PORT_STR}",
+    NEO4J_URI,
     auth=(NEO4J_USER_STR, NEO4J_PWD_STR),
-    max_connection_lifetime=NEO4J_MAX_CONNECTION_LIFETIME_INT
+    # max_connection_lifetime=NEO4J_MAX_CONNECTION_LIFETIME_INT
     )
 
 
@@ -270,7 +277,8 @@ class TestObjects(unittest.TestCase):
                         )
 
 
-if __name__ == "Tests":
+if __name__ in ("Tests", "__main__"):
+
     testSuite = unittest.TestSuite()
     testSuite.addTest(unittest.makeSuite(TestObjects))
 
