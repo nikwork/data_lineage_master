@@ -6,6 +6,7 @@ import unittest
 from neo4j import GraphDatabase, unit_of_work
 from data_linage_object_factory import DataLinageObjectFactory
 from business_process import BisnessProcess
+from test_helper import TestHelper
 from data_element import ElementAbstractionLevel as AbstractionLevel
 from dotenv import load_dotenv
 import dataclasses
@@ -49,47 +50,10 @@ _DRIVER = GraphDatabase.driver(
 
 class TestObjects(unittest.TestCase):
 
-    # TODO: Move all work with neo4j to special object (class)
-
-    def setUpModule():
-        print('setUpModule')
-
-    # Help methods
-    @staticmethod
-    @unit_of_work(timeout=5)
-    def create_person(tx, name):
-        return tx.run(
-                        "CREATE (a:Test {name: $name}) RETURN id(a)",
-                        name=name
-                    ).single().value()
-
-    @staticmethod
-    @unit_of_work(timeout=5)
-    def create_process(tx, properties):
-
-        # Convert data types
-
-        if properties.get("data_linage_object_type") is not None:
-            properties["data_linage_object_type"] = \
-                int(properties["data_linage_object_type"])
-
-        if properties.get("tags") is not None:
-            properties["tags"] = list(properties["tags"])
-
-        if properties.get("relations") is not None:
-            properties["relations"] = list(properties["relations"])
-
-        if properties.get("id") is not None:
-            properties["id"] = str(properties["id"])
-
-        # Insert row
-        return tx.run(
-                query="CREATE (a:Process) SET a = $dict_param  RETURN id(a)",
-                dict_param=properties
-            ) \
-            .single().value()
-
     # Start tests
+
+    def test_path_to_test_data(self):
+        self.assertTrue(os.path.exists(TEST_DATA_PATH))
 
     def test_data_linage_object(self):
         """
@@ -146,7 +110,7 @@ class TestObjects(unittest.TestCase):
             # create test node
             node_id = -1
             node_id = session.write_transaction(
-                    TestObjects.create_person,
+                    TestHelper.create_person,
                     "Test"
                 )
 
@@ -196,7 +160,7 @@ class TestObjects(unittest.TestCase):
                 row["is_test_object"] = True
 
                 node_id = session.write_transaction(
-                        TestObjects.create_process,
+                        TestHelper.create_process,
                         row
                     )
 
@@ -209,7 +173,7 @@ class TestObjects(unittest.TestCase):
 
         # Check
         self.assertEqual(
-                        self,
+                        # self,
                         len(dict_proc),
                         len(node_id_list),
                         "Not all processes in file moved in Neo4j"
@@ -259,7 +223,7 @@ class TestObjects(unittest.TestCase):
             for row in business_processes:
                 row["is_test_object"] = True
                 node_id = session.write_transaction(
-                    TestObjects.create_process,
+                    TestHelper.create_process,
                     row
                     )
                 node_id_list.append(node_id)
@@ -270,14 +234,14 @@ class TestObjects(unittest.TestCase):
 
         # Check
         self.assertEqual(
-                            self,
+                            # self,
                             len(dict_proc),
                             len(node_id_list),
                             "Not all processes in file moved in Neo4j"
                         )
 
 
-if __name__ in ("Tests", "__main__"):
+if __name__ in ("Tests"):
 
     testSuite = unittest.TestSuite()
     testSuite.addTest(unittest.makeSuite(TestObjects))
