@@ -34,14 +34,16 @@ NEO4J_MAX_CONNECTION_LIFETIME_INT = int(os.getenv(
 NEO4J_URI = f"neo4j://{NEO4J_HOST_STR}:{NEO4J_PORT_STR}"
 
 # Path to excel file with test data (processes, sources, destination objects)
+
 TEST_DATA_PATH = os.getenv('TEST_DATA_PATH')
 
 # Not compare test methods name
+
 unittest.TestLoader.sortTestMethodsUsing = None
 
 # Create Neo4j driver
 
-_DRIVER = GraphDatabase.driver(
+NEO4J_DRIVER = GraphDatabase.driver(
     NEO4J_URI,
     auth=(NEO4J_USER_STR, NEO4J_PWD_STR),
     # max_connection_lifetime=NEO4J_MAX_CONNECTION_LIFETIME_INT
@@ -53,6 +55,9 @@ class TestObjects(unittest.TestCase):
     # Start tests
 
     def test_path_to_test_data(self):
+        """
+        Check test data existence
+        """
         self.assertTrue(os.path.exists(TEST_DATA_PATH))
 
     def test_data_linage_object(self):
@@ -66,6 +71,7 @@ class TestObjects(unittest.TestCase):
                                                     description='test object'
                                                     )
         id_len = len(str(test_data_linage_object.id))
+
         self.assertTrue(
             id_len == 36,
             f"data_linage_object_factory: object id len is not 36 ({id_len})"
@@ -106,7 +112,7 @@ class TestObjects(unittest.TestCase):
         neo4j_config: dict
 
         # Create session
-        with _DRIVER.session() as session:
+        with NEO4J_DRIVER.session() as session:
             # create test node
             node_id = -1
             node_id = session.write_transaction(
@@ -142,7 +148,7 @@ class TestObjects(unittest.TestCase):
             dict_proc = df_proc.to_dict(orient='records')
 
         # Create session
-        with _DRIVER.session() as session:
+        with NEO4J_DRIVER.session() as session:
             # Delete test processes before test
             session.run(
                     "MATCH (a:Process) WHERE a.is_test_object=True DELETE a"
@@ -212,7 +218,7 @@ class TestObjects(unittest.TestCase):
             business_processes.append(dataclasses.asdict(business_process))
         print(business_processes)
         # Create session
-        with _DRIVER.session() as session:
+        with NEO4J_DRIVER.session() as session:
             # Delete test processes before test ()
             session.run(
                 "MATCH (a:Process) \
