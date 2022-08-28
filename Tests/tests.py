@@ -4,7 +4,8 @@ sys.path.append("/Users/nikolayvlasov/PythonProjects/data_lineage_master")
 import os
 import unittest
 from neo4j import GraphDatabase, unit_of_work
-from data_linage_object_factory import DataLinageObjectFactory
+from data_lineage_object_factory import DataLineageObjectFactory
+from data_lineage_object import DataLineageObjectUtils
 from business_process import BisnessProcess
 from test_helper import TestHelper
 from data_element import ElementAbstractionLevel as AbstractionLevel
@@ -60,21 +61,21 @@ class TestObjects(unittest.TestCase):
         """
         self.assertTrue(os.path.exists(TEST_DATA_PATH))
 
-    def test_data_linage_object(self):
+    def test_data_lineage_object(self):
         """
-        Test simple data linage object factory
+        Test simple data Lineage object factory
         """
 
-        test_data_linage_object = \
-            DataLinageObjectFactory.data_linage_object_factory(
+        test_data_lineage_object = \
+            DataLineageObjectFactory.data_lineage_object_factory(
                                                     name='test_object',
                                                     description='test object'
                                                     )
-        id_len = len(str(test_data_linage_object.id))
+        id_len = len(str(test_data_lineage_object.id))
 
         self.assertTrue(
             id_len == 36,
-            f"data_linage_object_factory: object id len is not 36 ({id_len})"
+            f"data_lineage_object_factory: object id len is not 36 ({id_len})"
         )
 
     def test_data_element_object(self):
@@ -82,8 +83,8 @@ class TestObjects(unittest.TestCase):
         Test data element factory
         """
 
-        # DataLinageObjectFactory.data_element_factory()
-        data_element = DataLinageObjectFactory.data_element_factory(
+        # DataLineageObjectFactory.data_element_factory()
+        data_element = DataLineageObjectFactory.data_element_factory(
                             name="test_object",
                             system_name="test_system",
                             storage_name="test_storage",
@@ -126,86 +127,18 @@ class TestObjects(unittest.TestCase):
             # remove test node
             session.run("MATCH (n {name:\"Test\"}) DELETE n")
 
-    def test_create_process_from_file(self):
-        """
-        TODO: this test starts after test_create_business_processes_from_file.
-        Have to find why and create correct test loge
-        Create processes in neo4f directly (without BusinessProject data class)
-        """
-
-        # Test data location
-        tst_data_path = TEST_DATA_PATH
-
-        # Dict with process properties
-        dict_proc = {}
-
-        # Result list of node's
-        node_id_list = []
-
-        # Load test data
-        with (open(tst_data_path, 'rb')) as excel_file:
-            df_proc = pd.read_excel(excel_file, sheet_name="process")
-            dict_proc = df_proc.to_dict(orient='records')
-
-        # Create session
-        with NEO4J_DRIVER.session() as session:
-            # Delete test processes before test
-            session.run(
-                    "MATCH (a:Process) WHERE a.is_test_object=True DELETE a"
-                )
-
-            # Load each row
-            for row in dict_proc:
-
-                row["process_natural_key"] = \
-                    "_".join([
-                            str(row["process_group_id"]),
-                            str(row["process_group_id"])
-                        ])
-
-                row["is_test_object"] = True
-
-                node_id = session.write_transaction(
-                        TestHelper.create_process,
-                        row
-                    )
-
-                node_id_list.append(node_id)
-
-            # Delete test processes after test
-            session.run(
-                "MATCH (a:Process) WHERE a.is_test_object=True DELETE a"
-                )
-
-        # Check
-        self.assertEqual(
-                        # self,
-                        len(dict_proc),
-                        len(node_id_list),
-                        "Not all processes in file moved in Neo4j"
-                        )
-
     def test_create_business_processes_from_file(self):
         """
         Test creation BusinessProcess objects from file and load to neo4j
         """
 
-        # Test data location
-        tst_data_path = TEST_DATA_PATH
-
-        # Dict with process properties
-        dict_proc = {}
+        # Result list of BusinessProcess
+        business_processes = []
 
         # Result list of node's
         node_id_list = []
 
-        # Result list of BusinessProcess
-        business_processes = []
-
-        # Load test data
-        with (open(tst_data_path, 'rb')) as excel_file:
-            df_proc = pd.read_excel(excel_file, sheet_name="process")
-            dict_proc = df_proc.to_dict(orient='records')
+        dict_proc = TestHelper.load_proc_list_from_file(TEST_DATA_PATH)
 
         #
         for row in dict_proc:
@@ -216,7 +149,7 @@ class TestObjects(unittest.TestCase):
                 )
             print(business_process)
             business_processes.append(dataclasses.asdict(business_process))
-        print(business_processes)
+
         # Create session
         with NEO4J_DRIVER.session() as session:
             # Delete test processes before test ()
@@ -227,7 +160,7 @@ class TestObjects(unittest.TestCase):
 
             # Load each row
             for row in business_processes:
-                row["is_test_object"] = True
+                # row["is_test_object"] = True
                 node_id = session.write_transaction(
                     TestHelper.create_process,
                     row
@@ -245,6 +178,16 @@ class TestObjects(unittest.TestCase):
                             len(node_id_list),
                             "Not all processes in file moved in Neo4j"
                         )
+
+    def test_decompose_data_object(self):
+        do_utils = DataLineageObjectUtils()
+        test_data_lineage_object = \
+            DataLineageObjectFactory.data_lineage_object_factory(
+                                                    name='test_object',
+                                                    description='test object'
+                                                    )
+        do_utils.decompose_data_object(test_data_lineage_object)
+        self.assertTrue(True)
 
 
 if __name__ in ("Tests"):

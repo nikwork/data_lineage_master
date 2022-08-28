@@ -1,10 +1,10 @@
 """https://appian.com/bpm/business-process-definition.html"""
-from data_linage_object import DataLinageObject, DataLinageObjectType
+from data_lineage_object import DataLineageObject, DataLineageObjectType
 from dataclasses import dataclass, field
 
 
 @dataclass
-class BisnessProcess(DataLinageObject):
+class BisnessProcess(DataLineageObject):
     """
     Business processes ensure a set of activities related to data processing.
     Business processes usually include references to related applications.
@@ -26,10 +26,10 @@ class BisnessProcess(DataLinageObject):
 
     def __post_init__(self):
 
-        DataLinageObject.__post_init__(self)
+        DataLineageObject.__post_init__(self)
 
         # Set object type
-        self.data_linage_object_type = DataLinageObjectType.BUSINESS_PROCESS
+        self.data_lineage_object_type = DataLineageObjectType.BUSINESS_PROCESS
 
         # Calculate business key
         self.process_natural_key = \

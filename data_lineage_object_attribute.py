@@ -4,7 +4,7 @@ import uuid
 
 
 @dataclass
-class DataLinageObjectAttribure:
+class DataLineageObjectAttribure:
     """
     Store attribute state.
     """

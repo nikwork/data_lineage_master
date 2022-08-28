@@ -1,6 +1,6 @@
 """http://www.ewsolutions.com/enterprise-data-modeling/"""
 
-from data_linage_object import DataLinageObject, DataLinageObjectType
+from data_lineage_object import DataLineageObject, DataLineageObjectType
 from enum import IntEnum
 from dataclasses import dataclass, field
 
@@ -32,7 +32,7 @@ class ElementAbstractionLevel(IntEnum):
 
 
 @dataclass
-class DataElement(DataLinageObject):
+class DataElement(DataLineageObject):
     """
     Data elements themselves form the key components of data lineage.
     Data elements can be specified on different levels of abstraction
@@ -55,7 +55,7 @@ class DataElement(DataLinageObject):
     def __post_init__(self):
 
         # Set object type
-        self.data_linage_object_type = DataLinageObjectType.DATA_ELEMENT
+        self.data_lineage_object_type = DataLineageObjectType.DATA_ELEMENT
 
         # Calculate business key
         self.full_name = f"{self.system_name}.{self.storage_name}.{self.name}"

@@ -1,7 +1,7 @@
 import yaml
 
 
-class DataLinageMaster:
+class DataLineageMaster:
     """
     Core instance of program
     """

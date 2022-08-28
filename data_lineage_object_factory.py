@@ -1,23 +1,23 @@
-from data_linage_object import DataLinageObject
+from data_lineage_object import DataLineageObject
 from data_element import (
                             DataElement,
                             ElementAbstractionLevel as AbstractionLevel
                         )
 
 
-class DataLinageObjectFactory:
-    """Factory methods for correct DataLinageObject creation."""
+class DataLineageObjectFactory:
+    """Factory methods for correct DataLineageObject creation."""
 
     @staticmethod
-    # Factory method for correct DataLinageObject creation.
-    def data_linage_object_factory(
+    # Factory method for correct DataLineageObject creation.
+    def data_lineage_object_factory(
                                     name,
                                     description=None,
                                     ext_storage_sync=False,
                                     tags=set,
                                     relations=set
                                 ):
-        """Data linage object factory function
+        """Data Lineage object factory function
 
         :param description:
         :param name:
@@ -27,7 +27,7 @@ class DataLinageObjectFactory:
         """
         # current_timestamp = datetime.datetime.utcnow()
 
-        return DataLinageObject(
+        return DataLineageObject(
                                 name=name,
                                 description=description,
                                 ext_storage_sync=ext_storage_sync,
