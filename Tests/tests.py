@@ -186,8 +186,15 @@ class TestObjects(unittest.TestCase):
                                                     name='test_object',
                                                     description='test object'
                                                     )
-        do_utils.decompose_data_object(test_data_lineage_object)
-        self.assertTrue(True)
+
+        decomposed_dic = do_utils.decompose_data_object(
+                                                    test_data_lineage_object
+                                                    )
+
+        if decomposed_dic['dlo_node'] and decomposed_dic['dlo_attribute_nodes']:
+            self.assertTrue(True)
+        else:
+            self.assertTrue(False)
 
 
 if __name__ in ("Tests"):

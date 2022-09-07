@@ -5,6 +5,10 @@ services:
     build: .
     environment:
       NEO4J_AUTH: ${NEO4J_USER}/${NEO4J_PWD}
+      NEO4J_apoc_export_file_enabled: ${NEO4J_apoc_export_file_enabled}
+      NEO4J_apoc_import_file_enabled: ${NEO4J_sapoc_import_file_enabled}
+      NEO4J_apoc_import_file_use__neo4j__config: ${NEO4J_apoc_import_file_use__neo4j__config}
+      NEO4JLABS_PLUGINS: ${NEO4JLABS_PLUGINS}
     ports:
       - "7687:7687"
       - "7474:7474"
